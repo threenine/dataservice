@@ -6,8 +6,9 @@ namespace Threenine;
 
 public interface IDataService
 {
-    Task<SingleResponse<TResponse>> Create<TEntity, TResponse>(TEntity entity) where TEntity : class
-        where TResponse : class;
+    Task<SingleResponse<TResponse>> Create<TEntity, TDomain, TResponse>(TDomain domain) where TEntity : class
+        where TResponse : class
+        where TDomain : class;
 
 
     Task<SingleResponse<TResponse>> Patch<TEntity, TDomain, TResponse>(Expression<Func<TEntity, bool>> predicate,

@@ -17,12 +17,14 @@ public class DataService : IDataService
         _mapper = mapper;
     }
 
-    public async Task<SingleResponse<TResponse>> Create<TEntity, TResponse>(TEntity entity)
+    public async Task<SingleResponse<TResponse>> Create<TEntity, TDomain, TResponse>(TDomain domain)
         where TEntity : class
         where TResponse : class
+    where TDomain : class
     {
         try
         {
+            var entity = _mapper.Map<TEntity>(domain);
             var created = _unitOfWork.GetRepository<TEntity>().Insert(entity);
             await _unitOfWork.CommitAsync();
             return new SingleResponse<TResponse>(_mapper.Map<TResponse>(created));
