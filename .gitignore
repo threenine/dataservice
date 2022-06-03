@@ -11,8 +11,8 @@ tests/**/bin
 .config
 .artifacts
 # User-specific files
-**/**/bin
-**/**/obj
+/**/**/bin
+/**/**/obj
 *.suo
 *.user
 *.userosscache
