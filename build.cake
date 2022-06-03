@@ -9,7 +9,7 @@ string version = String.Empty;
 
 Task("Clean")
     .Does(() => {
-    DotNetClean("./");
+    DotNetClean("./Build.sln");
 });
 
 Task("Restore")
