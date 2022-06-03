@@ -4,6 +4,8 @@
 src/**/bin
 src/**/obj
 
+.artifacts
+.config
 tests/**/obj
 tests/**/bin
 .config

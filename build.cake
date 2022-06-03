@@ -39,12 +39,13 @@ Task("Build")
     .IsDependentOn("Version")
     .Does(() => {
      var buildSettings = new DotNetBuildSettings {
-                        Configuration = configuration,
-                        MSBuildSettings = new DotNetMSBuildSettings()
-                                                      .WithProperty("Version", version)
-                                                      .WithProperty("AssemblyVersion", version)
-                                                      .WithProperty("FileVersion", version)
-                       };
+         Configuration = configuration,
+         MSBuildSettings = new DotNetMSBuildSettings()
+                .WithProperty("Version", version)
+                .WithProperty("AssemblyVersion", version)
+                .WithProperty("FileVersion", version)
+         };
+         
      var projects = GetFiles("./**/*.csproj");
      foreach(var project in projects )
      {
