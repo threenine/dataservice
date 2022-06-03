@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="11.0.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
     <PackageReference Include="Threenine.ApiResponse" Version="1.0.7" />
     <PackageReference Include="Threenine.Data" Version="3.2.2" />

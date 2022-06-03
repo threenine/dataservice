@@ -83,34 +83,40 @@ Task("Pack")
                         .WithProperty("Version", version)
     };
     
-    DotNetPack("./ApiResponse.sln", settings);
+    DotNetPack("./Build.sln", settings);
  });
 Task("PublishNuget")
  .IsDependentOn("Pack")
  .Does(context => {
-         
-         foreach(var file in GetFiles("./.artifacts/*.nupkg"))
-          {
-            Information("Publishing {0}...", file.GetFilename().FullPath);
-                 DotNetNuGetPush(file, new DotNetNuGetPushSettings {
-                     ApiKey = context.EnvironmentVariable("NUGET_API_KEY"),
-                     Source = "https://api.nuget.org/v3/index.json"
-                 });
-          }
+   if (BuildSystem.GitHubActions.IsRunningOnGitHubActions)
+   {
+        foreach(var file in GetFiles("./.artifacts/*.nupkg"))
+        {
+          Information("Publishing {0}...", file.GetFilename().FullPath);
+          DotNetNuGetPush(file, new DotNetNuGetPushSettings {
+           ApiKey = context.EnvironmentVariable("NUGET_API_KEY"),
+           Source = "https://api.nuget.org/v3/index.json"
+        });
+   }
+  }
+        
  }); 
  
  Task("PublishGithub")
   .IsDependentOn("Pack")
   .Does(context => {
-  
-      foreach(var file in GetFiles("./.artifacts/*.nupkg"))
-               {
-                      Information("Publishing {0}...", file.GetFilename().FullPath);
-                       DotNetNuGetPush(file, new DotNetNuGetPushSettings {
-                          ApiKey = EnvironmentVariable("GITHUB_TOKEN"),
-                          Source = "https://nuget.pkg.github.com/threenine/index.json"
-                      });
-               }  
+  if (BuildSystem.GitHubActions.IsRunningOnGitHubActions)
+  {
+     foreach(var file in GetFiles("./.artifacts/*.nupkg"))
+                    {
+                           Information("Publishing {0}...", file.GetFilename().FullPath);
+                            DotNetNuGetPush(file, new DotNetNuGetPushSettings {
+                               ApiKey = EnvironmentVariable("GITHUB_TOKEN"),
+                               Source = "https://nuget.pkg.github.com/threenine/index.json"
+                           });
+                    }  
+  }
+      
   }); 
 
 
