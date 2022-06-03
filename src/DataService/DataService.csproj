@@ -2,6 +2,7 @@
 
   <PropertyGroup>
    <IsPackable>true</IsPackable>
+   <AssemblyName>Threenine.DataService</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
