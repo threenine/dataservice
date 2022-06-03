@@ -108,13 +108,13 @@ Task("PublishNuget")
   if (BuildSystem.GitHubActions.IsRunningOnGitHubActions)
   {
      foreach(var file in GetFiles("./.artifacts/*.nupkg"))
-                    {
-                           Information("Publishing {0}...", file.GetFilename().FullPath);
-                            DotNetNuGetPush(file, new DotNetNuGetPushSettings {
-                               ApiKey = EnvironmentVariable("GITHUB_TOKEN"),
-                               Source = "https://nuget.pkg.github.com/threenine/index.json"
-                           });
-                    }  
+     {
+       Information("Publishing {0}...", file.GetFilename().FullPath);
+       DotNetNuGetPush(file, new DotNetNuGetPushSettings {
+              ApiKey = EnvironmentVariable("GITHUB_TOKEN"),
+              Source = "https://nuget.pkg.github.com/threenine/index.json"
+       });
+     }  
   }
       
   }); 
