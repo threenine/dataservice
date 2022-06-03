@@ -11,5 +11,9 @@
     <PackageReference Include="Threenine.Data" Version="3.2.2" />
     <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="6.0.5" />
   </ItemGroup>
-
+    <ItemGroup>
+        <Content Include="icon.png" Pack="true" PackagePath="\">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
 </Project>
