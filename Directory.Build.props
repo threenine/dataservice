@@ -12,5 +12,6 @@
         <ImplicitUsings>true</ImplicitUsings>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>disable</Nullable>
+        <PackageIcon>icon.png</PackageIcon>
     </PropertyGroup>
 </Project>
