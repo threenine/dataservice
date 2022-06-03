@@ -1,0 +1,13 @@
+<Project>
+    <PropertyGroup>
+        <Title>DataService</Title>
+        <Authors>Gary Woodfine</Authors>
+        <Description>Basic Crud Application Service</Description>
+        <RepositoryType>git</RepositoryType>
+        <PackageTags>api, crud,service</PackageTags>
+        <RepositoryUrl>https://github.com/threenine/dataservice</RepositoryUrl>
+        <PackageProjectUrl>https://threenine.co.uk</PackageProjectUrl>
+        <TargetFramework>net6.0</TargetFramework>
+        <RootNamespace>Threenine</RootNamespace>
+    </PropertyGroup>
+</Project>
