@@ -71,11 +71,21 @@ public class DataService : IDataService
         where TDomain : class
         where TResponse : class
     {
-        var entity = _unitOfWork.GetRepository<TEntity>().SingleOrDefault(predicate, enableTracking: true);
-        var updated = _mapper.Map(domain, entity);
-        _unitOfWork.GetRepository<TEntity>().Update(updated);
-        await _unitOfWork.CommitAsync();
-        var result = _mapper.Map<TResponse>(updated);
-        return new SingleResponse<TResponse>(result);
+        try
+        {
+            var entity = _unitOfWork.GetRepository<TEntity>().SingleOrDefault(predicate, enableTracking: true);
+            var updated = _mapper.Map(domain, entity);
+            _unitOfWork.GetRepository<TEntity>().Update(updated);
+            await _unitOfWork.CommitAsync();
+            var result = _mapper.Map<TResponse>(updated);
+            return new SingleResponse<TResponse>(result);
+        }
+        catch (DbUpdateException e)
+        {
+            return new SingleResponse<TResponse>(null, new List<KeyValuePair<string, string[]>>()
+            {
+                new(ErrorKeyNames.Conflict, new[] { e.InnerException?.Message })
+            });
+        }
     }
 }
