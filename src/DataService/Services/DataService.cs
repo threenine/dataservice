@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using System.Data.Common;
+using System.Linq.Expressions;
 using AutoMapper;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.EntityFrameworkCore;
@@ -8,7 +9,7 @@ using Threenine.Data;
 namespace Threenine.Services;
 public class DataService : IDataService
 {
-     private readonly IUnitOfWork _unitOfWork;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
     public DataService(IUnitOfWork unitOfWork, IMapper mapper)
@@ -36,6 +37,13 @@ public class DataService : IDataService
                 new(ErrorKeyNames.Conflict, new[] { e.InnerException?.Message })
             });
         }
+        catch (DbException e)
+        {
+            return new SingleResponse<TResponse>(null, new List<KeyValuePair<string, string[]>>()
+            {
+                new(ErrorKeyNames.Database, new[] { e.InnerException?.Message })
+            });
+        }
     }
 
     public async Task<SingleResponse<TResponse>> Patch<TEntity, TDomain, TResponse>(
@@ -47,7 +55,7 @@ public class DataService : IDataService
     {
         try
         {
-            var entity = _unitOfWork.GetRepository<TEntity>().SingleOrDefault(predicate, enableTracking: true);
+            var entity = await _unitOfWork.GetRepositoryAsync<TEntity>().SingleOrDefaultAsync(predicate, enableTracking:true);
             var mapped = _mapper.Map<TDomain>(entity);
             domain.ApplyTo(mapped);
             var patched = _mapper.Map(mapped, entity);
@@ -73,7 +81,7 @@ public class DataService : IDataService
     {
         try
         {
-            var entity = _unitOfWork.GetRepository<TEntity>().SingleOrDefault(predicate, enableTracking: true);
+            var entity = await _unitOfWork.GetRepositoryAsync<TEntity>().SingleOrDefaultAsync(predicate, enableTracking: true);
             var updated = _mapper.Map(domain, entity);
             _unitOfWork.GetRepository<TEntity>().Update(updated);
             await _unitOfWork.CommitAsync();
