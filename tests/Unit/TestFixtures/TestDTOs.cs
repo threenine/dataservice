@@ -1,6 +1,6 @@
-namespace Unit.TestFixtures;
+namespace Threenine.TestFixtures;
 
-public class TestEntity
+public class TestDTOs
 {
     public Guid Id { get; set; }
     public string Name { get; set; }

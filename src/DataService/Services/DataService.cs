@@ -27,7 +27,7 @@ public class DataService : IDataService
         {
             var entity = _mapper.Map<TEntity>(domain);
             var created = _unitOfWork.GetRepository<TEntity>().Insert(entity);
-            await _unitOfWork.CommitAsync(autoHistory: true);
+            await _unitOfWork.CommitAsync();
             return new SingleResponse<TResponse>(_mapper.Map<TResponse>(created));
         }
         catch (DbUpdateException e)
@@ -61,7 +61,7 @@ public class DataService : IDataService
             var patched = _mapper.Map(mapped, entity);
 
             _unitOfWork.GetRepository<TEntity>().Update(patched);
-            await _unitOfWork.CommitAsync(autoHistory: true);
+            await _unitOfWork.CommitAsync();
             var updated = _mapper.Map<TResponse>(patched);
             return new SingleResponse<TResponse>(updated);
         }
@@ -70,6 +70,13 @@ public class DataService : IDataService
             return new SingleResponse<TResponse>(null, new List<KeyValuePair<string, string[]>>()
             {
                 new(ErrorKeyNames.Conflict, new[] { e.InnerException?.Message })
+            });
+        }
+        catch (DbException e)
+        {
+            return new SingleResponse<TResponse>(null, new List<KeyValuePair<string, string[]>>()
+            {
+                new(ErrorKeyNames.Database, new[] { e.InnerException?.Message })
             });
         }
     }
@@ -84,7 +91,7 @@ public class DataService : IDataService
             var entity = await _unitOfWork.GetRepositoryAsync<TEntity>().SingleOrDefaultAsync(predicate, enableTracking: true);
             var updated = _mapper.Map(domain, entity);
             _unitOfWork.GetRepository<TEntity>().Update(updated);
-            await _unitOfWork.CommitAsync(autoHistory: true);
+            await _unitOfWork.CommitAsync();
             var result = _mapper.Map<TResponse>(updated);
             return new SingleResponse<TResponse>(result);
         }
@@ -93,6 +100,20 @@ public class DataService : IDataService
             return new SingleResponse<TResponse>(null, new List<KeyValuePair<string, string[]>>()
             {
                 new(ErrorKeyNames.Conflict, new[] { e.InnerException?.Message })
+            });
+        }
+        catch (DbException e)
+        {
+            return new SingleResponse<TResponse>(null, new List<KeyValuePair<string, string[]>>()
+            {
+                new(ErrorKeyNames.Database, new[] { e.InnerException?.Message })
+            });
+        }
+        catch (Exception e)
+        {
+            return new SingleResponse<TResponse>(null, new List<KeyValuePair<string, string[]>>()
+            {
+                new(ErrorKeyNames.Database, new[] { e.Message })
             });
         }
     }
