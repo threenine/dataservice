@@ -10,7 +10,7 @@ public class TestDbContext : DbContext
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-      //  modelBuilder.EnableAutoHistory();
+    
         modelBuilder.Entity<TestEntity>(entity =>
         {
             entity.ToTable(nameof(TestEntity));

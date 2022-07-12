@@ -2,7 +2,6 @@ using AutoMapper;
 using FizzWare.NBuilder;
 using Shouldly;
 using TestDatabase;
-using Threenine.ApiResponse;
 using Threenine.Data;
 using Threenine.Services;
 using Threenine.TestFixtures;

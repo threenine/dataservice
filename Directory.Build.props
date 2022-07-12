@@ -14,4 +14,9 @@
         <Nullable>disable</Nullable>
         <PackageIcon>icon.png</PackageIcon>
     </PropertyGroup>
+    <ItemGroup>
+        <Content Include="icon.png" Pack="true" PackagePath="/">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
 </Project>
