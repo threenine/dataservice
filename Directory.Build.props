@@ -9,13 +9,12 @@
         <PackageProjectUrl>https://threenine.co.uk</PackageProjectUrl>
         <TargetFramework>net6.0</TargetFramework>
         <RootNamespace>Threenine</RootNamespace>
-        <ImplicitUsings>true</ImplicitUsings>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>disable</Nullable>
         <PackageIcon>icon.png</PackageIcon>
     </PropertyGroup>
     <ItemGroup>
-        <Content Include="icon.png" Pack="true" PackagePath="/">
+        <Content Include="$(MSBuildThisFileDirectory)icon.png" Pack="true" PackagePath="/">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
     </ItemGroup>
