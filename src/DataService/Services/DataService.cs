@@ -81,7 +81,7 @@ public class DataService : IDataService
         }
         catch (DbException e)
         {
-            _logger.LogError(e, nameof(DataService.Create));
+            _logger.LogError(e, nameof(DataService.Patch));
             return new SingleResponse<TResponse>(null, new List<KeyValuePair<string, string[]>>()
             {
                 new(ErrorKeyNames.Database, new[] { "Could not apply update"})

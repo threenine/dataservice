@@ -1,5 +1,7 @@
 using AutoMapper;
 using FizzWare.NBuilder;
+using Microsoft.Extensions.Logging;
+using Moq;
 using Shouldly;
 using TestDatabase;
 using Threenine.Data;
@@ -18,16 +20,18 @@ public class DataServiceTests
 
     private IUnitOfWork _unitOfWork;
     private IMapper _mapper;
+    private Mock<ILogger> _loggerMock;
     public DataServiceTests(InMemoryFixture fixture)
     {
         _fixture = fixture;
         _unitOfWork = new UnitOfWork<TestDbContext>(_fixture.Context);
+        _loggerMock = new Mock<ILogger>();
         
         var mapperConfiguration = new MapperConfiguration(configuration => configuration.AddProfile<TestMapping>());
         mapperConfiguration.AssertConfigurationIsValid();
         _mapper = mapperConfiguration.CreateMapper();
 
-        _classUnderTest = new DataService(_unitOfWork, _mapper);
+        _classUnderTest = new DataService(_unitOfWork, _mapper, _loggerMock.Object);
     }
 
 
