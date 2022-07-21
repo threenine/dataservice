@@ -3,7 +3,7 @@ using System.Linq.Expressions;
 using AutoMapper;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+using Serilog;
 using Threenine.ApiResponse;
 using Threenine.Data;
 
@@ -36,7 +36,7 @@ public class DataService : IDataService
         }
         catch (DbUpdateException e)
         {
-            _logger.LogError(e, nameof(DataService.Create));
+            _logger.Error(e, nameof(DataService.Create));
             return new SingleResponse<TResponse>(null, new List<KeyValuePair<string, string[]>>()
             {
                 new(ErrorKeyNames.Conflict, new[] { "A record already exists" })
@@ -44,7 +44,7 @@ public class DataService : IDataService
         }
         catch (DbException e)
         {
-            _logger.LogError(e, nameof(DataService.Create));
+            _logger.Error(e, nameof(DataService.Create));
             return new SingleResponse<TResponse>(null, new List<KeyValuePair<string, string[]>>()
             {
                 new(ErrorKeyNames.Database, new[] { e.InnerException?.Message })
@@ -73,7 +73,7 @@ public class DataService : IDataService
         }
         catch (DbUpdateException e)
         {
-            _logger.LogError(e, nameof(DataService.Patch));
+            _logger.Error(e, nameof(DataService.Patch));
             return new SingleResponse<TResponse>(null, new List<KeyValuePair<string, string[]>>()
             {
                 new(ErrorKeyNames.Conflict, new[] { "Could not patch record trying to update to existing record value" })
@@ -81,7 +81,7 @@ public class DataService : IDataService
         }
         catch (DbException e)
         {
-            _logger.LogError(e, nameof(DataService.Patch));
+            _logger.Error(e, nameof(DataService.Patch));
             return new SingleResponse<TResponse>(null, new List<KeyValuePair<string, string[]>>()
             {
                 new(ErrorKeyNames.Database, new[] { "Could not apply update"})
@@ -112,7 +112,7 @@ public class DataService : IDataService
         }
         catch (DbException e)
         {
-            _logger.LogError(e, nameof(DataService.Update));
+            _logger.Error(e, nameof(DataService.Update));
             return new SingleResponse<TResponse>(null, new List<KeyValuePair<string, string[]>>()
             {
                 new(ErrorKeyNames.Database, new[] { "Could not update record" })
@@ -120,7 +120,7 @@ public class DataService : IDataService
         }
         catch (Exception e)
         {
-            _logger.LogError(e, nameof(DataService.Update));
+            _logger.Error(e, nameof(DataService.Update));
             return new SingleResponse<TResponse>(null, new List<KeyValuePair<string, string[]>>()
             {
                 new(ErrorKeyNames.Database, new[] { "An error occurred"})

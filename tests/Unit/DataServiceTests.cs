@@ -1,6 +1,6 @@
 using AutoMapper;
 using FizzWare.NBuilder;
-using Microsoft.Extensions.Logging;
+using Serilog;
 using Moq;
 using Shouldly;
 using TestDatabase;
