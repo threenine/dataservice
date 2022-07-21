@@ -3,6 +3,7 @@ using System.Linq.Expressions;
 using AutoMapper;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Threenine.ApiResponse;
 using Threenine.Data;
 
@@ -11,11 +12,14 @@ public class DataService : IDataService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly ILogger _logger;
+        
 
-    public DataService(IUnitOfWork unitOfWork, IMapper mapper)
+    public DataService(IUnitOfWork unitOfWork, IMapper mapper, ILogger logger)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
+        _logger = logger;
     }
 
     public async Task<SingleResponse<TResponse>> Create<TEntity, TDomain, TResponse>(TDomain domain)
@@ -32,13 +36,15 @@ public class DataService : IDataService
         }
         catch (DbUpdateException e)
         {
+            _logger.LogError(e, nameof(DataService.Create));
             return new SingleResponse<TResponse>(null, new List<KeyValuePair<string, string[]>>()
             {
-                new(ErrorKeyNames.Conflict, new[] { e.InnerException?.Message })
+                new(ErrorKeyNames.Conflict, new[] { "A record already exists" })
             });
         }
         catch (DbException e)
         {
+            _logger.LogError(e, nameof(DataService.Create));
             return new SingleResponse<TResponse>(null, new List<KeyValuePair<string, string[]>>()
             {
                 new(ErrorKeyNames.Database, new[] { e.InnerException?.Message })
@@ -67,16 +73,18 @@ public class DataService : IDataService
         }
         catch (DbUpdateException e)
         {
+            _logger.LogError(e, nameof(DataService.Patch));
             return new SingleResponse<TResponse>(null, new List<KeyValuePair<string, string[]>>()
             {
-                new(ErrorKeyNames.Conflict, new[] { e.InnerException?.Message })
+                new(ErrorKeyNames.Conflict, new[] { "Could not patch record trying to update to existing record value" })
             });
         }
         catch (DbException e)
         {
+            _logger.LogError(e, nameof(DataService.Create));
             return new SingleResponse<TResponse>(null, new List<KeyValuePair<string, string[]>>()
             {
-                new(ErrorKeyNames.Database, new[] { e.InnerException?.Message })
+                new(ErrorKeyNames.Database, new[] { "Could not apply update"})
             });
         }
     }
@@ -99,21 +107,23 @@ public class DataService : IDataService
         {
             return new SingleResponse<TResponse>(null, new List<KeyValuePair<string, string[]>>()
             {
-                new(ErrorKeyNames.Conflict, new[] { e.InnerException?.Message })
+                new(ErrorKeyNames.Conflict, new[] { "Could not update record" })
             });
         }
         catch (DbException e)
         {
+            _logger.LogError(e, nameof(DataService.Update));
             return new SingleResponse<TResponse>(null, new List<KeyValuePair<string, string[]>>()
             {
-                new(ErrorKeyNames.Database, new[] { e.InnerException?.Message })
+                new(ErrorKeyNames.Database, new[] { "Could not update record" })
             });
         }
         catch (Exception e)
         {
+            _logger.LogError(e, nameof(DataService.Update));
             return new SingleResponse<TResponse>(null, new List<KeyValuePair<string, string[]>>()
             {
-                new(ErrorKeyNames.Database, new[] { e.Message })
+                new(ErrorKeyNames.Database, new[] { "An error occurred"})
             });
         }
     }
