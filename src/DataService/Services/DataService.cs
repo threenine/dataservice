@@ -1,6 +1,7 @@
 ﻿using System.Data.Common;
 using System.Linq.Expressions;
 using AutoMapper;
+using FluentValidation;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -13,30 +14,36 @@ public class DataService : IDataService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly ILogger _logger;
-        
+    private readonly IEnumerable<IValidator> _validators;
 
-    public DataService(IUnitOfWork unitOfWork, IMapper mapper, ILogger logger)
+    public DataService(IUnitOfWork unitOfWork, IMapper mapper, ILogger logger, IEnumerable<IValidator> validators)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _logger = logger;
+        _validators = validators;
     }
 
     public async Task<SingleResponse<TResponse>> Create<TEntity, TDomain, TResponse>(TDomain domain)
         where TEntity : class
         where TResponse : class
-    where TDomain : class
-    {
+        where TDomain : class
+    { 
         try
         {
             var entity = _mapper.Map<TEntity>(domain);
+
+            var validateErrors = await ValidateEntity(entity);
+
+            if (validateErrors.Any()) return new SingleResponse<TResponse>(null, validateErrors.ToList());
+            
             var created = _unitOfWork.GetRepository<TEntity>().Insert(entity);
             await _unitOfWork.CommitAsync();
             return new SingleResponse<TResponse>(_mapper.Map<TResponse>(created));
         }
         catch (DbUpdateException e)
         {
-            _logger.Error(e, nameof(DataService.Create));
+            _logger.Error(e, nameof(Create));
             return new SingleResponse<TResponse>(null, new List<KeyValuePair<string, string[]>>()
             {
                 new(ErrorKeyNames.Conflict, new[] { "A record already exists" })
@@ -44,7 +51,7 @@ public class DataService : IDataService
         }
         catch (DbException e)
         {
-            _logger.Error(e, nameof(DataService.Create));
+            _logger.Error(e, nameof(Create));
             return new SingleResponse<TResponse>(null, new List<KeyValuePair<string, string[]>>()
             {
                 new(ErrorKeyNames.Database, new[] { e.InnerException?.Message })
@@ -73,7 +80,7 @@ public class DataService : IDataService
         }
         catch (DbUpdateException e)
         {
-            _logger.Error(e, nameof(DataService.Patch));
+            _logger.Error(e, nameof(Patch));
             return new SingleResponse<TResponse>(null, new List<KeyValuePair<string, string[]>>()
             {
                 new(ErrorKeyNames.Conflict, new[] { "Could not patch record trying to update to existing record value" })
@@ -81,7 +88,7 @@ public class DataService : IDataService
         }
         catch (DbException e)
         {
-            _logger.Error(e, nameof(DataService.Patch));
+            _logger.Error(e, nameof(Patch));
             return new SingleResponse<TResponse>(null, new List<KeyValuePair<string, string[]>>()
             {
                 new(ErrorKeyNames.Database, new[] { "Could not apply update"})
@@ -112,7 +119,7 @@ public class DataService : IDataService
         }
         catch (DbException e)
         {
-            _logger.Error(e, nameof(DataService.Update));
+            _logger.Error(e, nameof(Update));
             return new SingleResponse<TResponse>(null, new List<KeyValuePair<string, string[]>>()
             {
                 new(ErrorKeyNames.Database, new[] { "Could not update record" })
@@ -120,11 +127,28 @@ public class DataService : IDataService
         }
         catch (Exception e)
         {
-            _logger.Error(e, nameof(DataService.Update));
+            _logger.Error(e, nameof(Update));
             return new SingleResponse<TResponse>(null, new List<KeyValuePair<string, string[]>>()
             {
                 new(ErrorKeyNames.Database, new[] { "An error occurred"})
             });
         }
+    }
+
+    private async Task<Dictionary<string,string[]>> ValidateEntity<T>(T entity) where T : class
+    {
+        var context = new ValidationContext<T>(entity);
+        var result = await Task.WhenAll(_validators.Select(v => v.ValidateAsync(context)));
+
+        return  result.SelectMany(r => r.Errors)
+            .Where(f => f != null)
+            .GroupBy(x => x.PropertyName,
+                x => x.ErrorMessage,
+                (propertyName, errorMessages) => new
+                {
+                    Key = propertyName,
+                    Values = errorMessages.Distinct().ToArray()
+                })
+            .ToDictionary(x => x.Key, x => x.Values);
     }
 }

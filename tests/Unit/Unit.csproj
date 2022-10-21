@@ -4,6 +4,8 @@
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="AutoMapper" Version="11.0.1" />
+        <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.2.2" />
+        <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="6.0.6" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.6" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="6.0.6" />

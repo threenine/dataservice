@@ -1,5 +1,6 @@
 using AutoMapper;
 using FizzWare.NBuilder;
+using FluentValidation;
 using Serilog;
 using Moq;
 using Shouldly;
@@ -21,17 +22,19 @@ public class DataServiceTests
     private IUnitOfWork _unitOfWork;
     private IMapper _mapper;
     private Mock<ILogger> _loggerMock;
+    private Mock<IEnumerable<IValidator>> _validatorMock;
     public DataServiceTests(InMemoryFixture fixture)
     {
         _fixture = fixture;
         _unitOfWork = new UnitOfWork<TestDbContext>(_fixture.Context);
         _loggerMock = new Mock<ILogger>();
+        _validatorMock = new Mock<IEnumerable<IValidator>>();
         
         var mapperConfiguration = new MapperConfiguration(configuration => configuration.AddProfile<TestMapping>());
         mapperConfiguration.AssertConfigurationIsValid();
         _mapper = mapperConfiguration.CreateMapper();
 
-        _classUnderTest = new DataService(_unitOfWork, _mapper, _loggerMock.Object);
+        _classUnderTest = new DataService(_unitOfWork, _mapper, _loggerMock.Object, _validatorMock.Object );
     }
 
 
