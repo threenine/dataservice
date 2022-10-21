@@ -55,21 +55,6 @@ public class DataServiceTests
             );
     }
     
-    [Fact]
-    public async Task ShouldInsert()
-    {
-        var test = Builder<TestDTOs>.CreateNew()
-            .With(x => x.Id = Guid.Parse("0E9E4227-E8A5-4BA5-9FC4-48272F778EA0"))
-            .With(x => x.Name = "Test Update")
-            .Build();
-
-      
-        var result = await _classUnderTest.Create<TestEntity, TestDTOs, TestResponse>( test);
-        
-        result.ShouldSatisfyAllConditions(
-            () => result.ShouldNotBeNull(),
-            () => result.Item.ShouldBeOfType<TestResponse>()
-        );
-    }
+  
     
 }
