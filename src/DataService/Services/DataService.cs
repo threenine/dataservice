@@ -72,7 +72,9 @@ public class DataService : IDataService
             var mapped = _mapper.Map<TDomain>(entity);
             domain.ApplyTo(mapped);
             var patched = _mapper.Map(mapped, entity);
+            var validateErrors = await ValidateEntity(patched);
 
+            if (validateErrors.Any()) return new SingleResponse<TResponse>(null, validateErrors.ToList());
             _unitOfWork.GetRepository<TEntity>().Update(patched);
             await _unitOfWork.CommitAsync();
             var updated = _mapper.Map<TResponse>(patched);
@@ -105,6 +107,8 @@ public class DataService : IDataService
         {
             var entity = await _unitOfWork.GetRepositoryAsync<TEntity>().SingleOrDefaultAsync(predicate, enableTracking: true);
             var updated = _mapper.Map(domain, entity);
+            var validateErrors = await ValidateEntity(entity);
+            if (validateErrors.Any()) return new SingleResponse<TResponse>(null, validateErrors.ToList());
             _unitOfWork.GetRepository<TEntity>().Update(updated);
             await _unitOfWork.CommitAsync();
             var result = _mapper.Map<TResponse>(updated);
