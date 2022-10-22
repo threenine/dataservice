@@ -9,31 +9,31 @@ using Threenine.ApiResponse;
 using Threenine.Data;
 
 namespace Threenine.Services;
-public class DataService : IDataService
+public class DataService<TEntity> : IDataService<TEntity> where TEntity : class
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly ILogger _logger;
-    private readonly IEnumerable<IValidator> _validators;
+    private readonly IEntityValidationService<TEntity> _validationService;
 
-    public DataService(IUnitOfWork unitOfWork, IMapper mapper, ILogger logger, IEnumerable<IValidator> validators)
+
+    public DataService(IUnitOfWork unitOfWork, IMapper mapper, ILogger logger, IEntityValidationService<TEntity> validationService)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _logger = logger;
-        _validators = validators;
+        _validationService = validationService;
     }
 
-    public async Task<SingleResponse<TResponse>> Create<TEntity, TDomain, TResponse>(TDomain domain)
-        where TEntity : class
-        where TResponse : class
+    public async Task<SingleResponse<TResponse>> Create<TDomain, TResponse>(TDomain domain)
+      where TResponse : class
         where TDomain : class
     { 
         try
         {
             var entity = _mapper.Map<TEntity>(domain);
 
-            var validateErrors = await ValidateEntity(entity);
+            var validateErrors = await _validationService.Validate(entity);
 
             if (validateErrors.Any()) return new SingleResponse<TResponse>(null, validateErrors.ToList());
             
@@ -59,10 +59,10 @@ public class DataService : IDataService
         }
     }
 
-    public async Task<SingleResponse<TResponse>> Patch<TEntity, TDomain, TResponse>(
+    public async Task<SingleResponse<TResponse>> Patch<TDomain, TResponse>(
         Expression<Func<TEntity, bool>> predicate,
         JsonPatchDocument<TDomain> domain)
-        where TEntity : class
+      
         where TDomain : class
         where TResponse : class
     {
@@ -72,7 +72,7 @@ public class DataService : IDataService
             var mapped = _mapper.Map<TDomain>(entity);
             domain.ApplyTo(mapped);
             var patched = _mapper.Map(mapped, entity);
-            var validateErrors = await ValidateEntity(patched);
+            var validateErrors = await _validationService.Validate(patched);
 
             if (validateErrors.Any()) return new SingleResponse<TResponse>(null, validateErrors.ToList());
             _unitOfWork.GetRepository<TEntity>().Update(patched);
@@ -98,8 +98,8 @@ public class DataService : IDataService
         }
     }
 
-    public async Task<SingleResponse<TResponse>> Update<TEntity, TDomain, TResponse>(
-        Expression<Func<TEntity, bool>> predicate, TDomain domain) where TEntity : class
+    public async Task<SingleResponse<TResponse>> Update<TDomain, TResponse>(
+        Expression<Func<TEntity, bool>> predicate, TDomain domain)
         where TDomain : class
         where TResponse : class
     {
@@ -107,15 +107,16 @@ public class DataService : IDataService
         {
             var entity = await _unitOfWork.GetRepositoryAsync<TEntity>().SingleOrDefaultAsync(predicate, enableTracking: true);
             var updated = _mapper.Map(domain, entity);
-            var validateErrors = await ValidateEntity(entity);
+            var validateErrors = await _validationService.Validate(entity);
             if (validateErrors.Any()) return new SingleResponse<TResponse>(null, validateErrors.ToList());
             _unitOfWork.GetRepository<TEntity>().Update(updated);
             await _unitOfWork.CommitAsync();
             var result = _mapper.Map<TResponse>(updated);
             return new SingleResponse<TResponse>(result);
         }
-        catch (DbUpdateException e)
+        catch (DbUpdateException ex)
         {
+            var poo = ex.Message;
             return new SingleResponse<TResponse>(null, new List<KeyValuePair<string, string[]>>()
             {
                 new(ErrorKeyNames.Conflict, new[] { "Could not update record" })
@@ -139,20 +140,5 @@ public class DataService : IDataService
         }
     }
 
-    private async Task<Dictionary<string,string[]>> ValidateEntity<T>(T entity) where T : class
-    {
-        var context = new ValidationContext<T>(entity);
-        var result = await Task.WhenAll(_validators.Select(v => v.ValidateAsync(context)));
-
-        return  result.SelectMany(r => r.Errors)
-            .Where(f => f != null)
-            .GroupBy(x => x.PropertyName,
-                x => x.ErrorMessage,
-                (propertyName, errorMessages) => new
-                {
-                    Key = propertyName,
-                    Values = errorMessages.Distinct().ToArray()
-                })
-            .ToDictionary(x => x.Key, x => x.Values);
-    }
+   
 }

@@ -16,7 +16,7 @@ Task("Restore")
     .IsDependentOn("Clean")
     .Description("Restoring the solution dependencies")
     .Does(() => {
-           var projects = GetFiles("./**/*.csproj");
+           var projects = GetFiles("./src/*.csproj");
 
               foreach(var project in projects )
               {

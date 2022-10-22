@@ -1,8 +1,7 @@
 using AutoMapper;
 using FizzWare.NBuilder;
-using FluentValidation;
-using Serilog;
 using Moq;
+using Serilog;
 using Shouldly;
 using TestDatabase;
 using Threenine.Data;
@@ -16,29 +15,28 @@ namespace Threenine;
 public class DataServiceTests
 {
     private readonly InMemoryFixture _fixture;
-    private readonly DataService _classUnderTest;
+    private readonly DataService<TestEntity> _classUnderTest;
     
 
     private IUnitOfWork _unitOfWork;
     private IMapper _mapper;
     private Mock<ILogger> _loggerMock;
-    private Mock<IEnumerable<IValidator>> _validatorMock;
+    private Mock<IEntityValidationService<TestEntity>> _validatorMock;
     public DataServiceTests(InMemoryFixture fixture)
     {
         _fixture = fixture;
         _unitOfWork = new UnitOfWork<TestDbContext>(_fixture.Context);
         _loggerMock = new Mock<ILogger>();
-        _validatorMock = new Mock<IEnumerable<IValidator>>();
+        _validatorMock = new Mock<IEntityValidationService<TestEntity>>();
         
         var mapperConfiguration = new MapperConfiguration(configuration => configuration.AddProfile<TestMapping>());
         mapperConfiguration.AssertConfigurationIsValid();
         _mapper = mapperConfiguration.CreateMapper();
 
-        _classUnderTest = new DataService(_unitOfWork, _mapper, _loggerMock.Object, _validatorMock.Object );
+        _classUnderTest = new DataService<TestEntity>(_unitOfWork, _mapper, _loggerMock.Object, _validatorMock.Object );
     }
 
 
-    /*
     [Fact]
     public async Task ShouldUpdate()
     {
@@ -47,14 +45,15 @@ public class DataServiceTests
             .With(x => x.Name = "Test Update")
             .Build();
 
-      
-        var result = await _classUnderTest.Update<TestEntity, TestDTOs, TestResponse>(x => x.Id == test.Id, test);
+        _validatorMock.Setup(x => x.Validate(It.IsAny<TestEntity>())).ReturnsAsync((TestEntity entity) => new Dictionary<string, string[]>());
+        
+        var result = await _classUnderTest.Update<TestDTOs, TestResponse>(x => x.Id == test.Id, test);
         
         result.ShouldSatisfyAllConditions(
             () => result.ShouldNotBeNull(),
             () => result.Item.ShouldBeOfType<TestResponse>()
             );
-    }*/
+    }
     
   
     
