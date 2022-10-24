@@ -1,7 +1,6 @@
 ﻿using System.Data.Common;
 using System.Linq.Expressions;
 using AutoMapper;
-using FluentValidation;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -116,7 +115,7 @@ public class DataService<TEntity> : IDataService<TEntity> where TEntity : class
         }
         catch (DbUpdateException ex)
         {
-            var poo = ex.Message;
+            _logger.Error(ex, nameof(Update));
             return new SingleResponse<TResponse>(null, new List<KeyValuePair<string, string[]>>()
             {
                 new(ErrorKeyNames.Conflict, new[] { "Could not update record" })
